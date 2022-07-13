@@ -1,25 +1,80 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import ContactForm from "./Components/ContactForm";
+import Contacts from "./Components/ContactList";
+import Filter from "./Components/Filter";
+import Section from "./Components/Section";
+import shortid from "shortid";
+import contacts from "./Components/data/contacts.json";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends Component {
+  state = {
+    contacts,
+    filter: "",
+  };
+
+  addContact = (name, number) => {
+    const { contacts } = this.state;
+    const newName = {
+      id: shortid.generate(),
+      name,
+      number,
+    };
+
+    if (
+      contacts.every(
+        ({ name }) => name.toLowerCase() !== newName.name.toLowerCase()
+      )
+    ) {
+      this.setState((prevState) => ({
+        contacts: [newName, ...prevState.contacts],
+      }));
+    } else {
+      alert(`${newName.name} is already in contacts`);
+    }
+  };
+
+  deleteContact = (contactId) => {
+    this.setState((prevState) => ({
+      contacts: prevState.contacts.filter(
+        (contact) => contact.id !== contactId
+      ),
+    }));
+  };
+
+  handleChangeFilter = (e) => {
+    this.setState({
+      filter: e.currentTarget.value,
+    });
+  };
+
+  render() {
+    const { contacts, filter } = this.state;
+    const convertFilter = filter.toLowerCase();
+    const visibleNames = contacts.filter((contact) =>
+      contact.name.toLowerCase().includes(convertFilter)
+    );
+
+    return (
+      <div
+        style={{
+          fontSize: 20,
+          fontWeight: 400,
+        }}
+      >
+        <Section title="Phonebook">
+          <ContactForm onSubmit={this.addContact} />
+        </Section>
+
+        <Section title="Contacts">
+          <Filter value={filter} onChange={this.handleChangeFilter} />
+          <Contacts
+            contacts={visibleNames}
+            onDeleteContact={this.deleteContact}
+          />
+        </Section>
+      </div>
+    );
+  }
 }
 
 export default App;
